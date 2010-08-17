@@ -174,6 +174,7 @@ prop(Buffer.prototype, 'content', function(){
   return this.node.innerHTML;
 }, function(str){
   $(this.node).empty().append(document.createTextNode(str));
+  this.update();
   this.window.gutter.update();
 });
 
@@ -181,6 +182,7 @@ prop(Buffer.prototype, 'html', function(){
   return this.node.innerHTML;
 }, function(str){
   this.node.innerHTML = str;
+  this.update();
   this.window.gutter.update();
 });
 
@@ -205,19 +207,115 @@ Window.prototype = {
   }
 };
 
+// ----------------------------------------------------------------------------
+// commands
+
+exports.commands = {
+  help: function (rawArgs, subject) {
+    var self = w.buffer;
+    //var text = $('#help-buffer')[0].firstChild.data;
+    //$(self.node).empty()[0].appendChild(document.createTextNode(text));
+    //$(self.node).html($('#help-buffer').html());
+    self.mode = 'txt';
+    self.html = $('#help-buffer').html();
+    return '';
+  },
+  mode: function (rawArgs, setmode) {
+    var self = w.buffer;
+    if (setmode) {
+      self.mode = setmode;
+      self.update();
+    }
+    return self.mode;
+  },
+  eval: function (rawArgs) {
+    try {
+      var r = eval(rawArgs);
+      console.log('eval>', rawArgs, '-->', r);
+      try {
+        r = JSON.stringify(r);
+      } catch (e) {}
+      return String(r);
+    } catch (e) {
+      return String(e);
+    }
+  },
+  
+  // new buffer
+  'new-buffer': function() {
+    var self = w.buffer;
+    // TODO: window <w> should be able to keep around multiple buffers
+    //       and this command should do e.g. w.buffers.unshift(new Buffer)
+    self.content = '';
+    $(self.node).focus();
+    return '';
+  },
+  // clear current buffer
+  'clear-buffer': function () {
+    var self = w.buffer;
+    self.content = '';
+  },
+  
+  // enable/disable prettify
+  'prettify': function (raw, action) {
+    var withoutInSearch =
+      document.location.search.indexOf('without-prettify') !== -1;
+    if (String(action).charAt(0) === 'd') {
+      if (!withoutInSearch) {
+        setTimeout(function(){
+          document.location.search +=
+            ((document.location.search.indexOf('?') === -1) ? '?' : '&')+
+            'without-prettify';
+        },100);
+        return '';
+      } else {
+        return 'prettify already disabled';
+      }
+    } else {
+      if (withoutInSearch) {
+        setTimeout(function(){
+          document.location.search =
+            document.location.search.replace(/without-prettify/g, '');
+        },100);
+        return '';
+      } else {
+        return 'prettify already enabled';
+      }
+    }
+  },
+
+  'load-url': function(raw, url) {
+    var self = exports.w.buffer;
+    self.mode = 'txt';
+    self.content = 'Loading '+url+'...';
+    $.get(url, function(data){
+      self.mode = 'html'; // TODO: check content-type header in response
+      self.content = data;
+    });
+  },
+
+  // clears the command line history
+  'clear-history': function () {
+    localStorage.removeItem('commandHistory');
+    return '';
+  }
+
+};
+
 // -------------------------------------------------------------------------
 
 // See this on performing "incremental" actions on the selection:
 // https://developer.mozilla.org/en/DOM/Selection/modify
 
+// convenience "on" for event listeners
 Node.prototype.on = Node.prototype.addEventListener;
 
-var windows = [];
-
-document.execCommand('insertBrOnReturn', false, true);
+// BR or not no BR
+document.execCommand('insertBrOnReturn', false, false);
 
 $(function(){
-  var w = new Window($('window')[0]);
+  // currently we only support one window and this is it.
+  var w = exports.w = new Window($('window')[0]);
   
   /*['DOMFocusIn', 'DOMFocusOut', 'DOMActivate'].forEach(function(evname){
     document.on(evname, function(ev) { console.log('document', evname, ev); });
@@ -305,95 +403,6 @@ $(function(){
 
   // command line / minibuffer stuff -- area of TODO FIXME WIP and REFACTOR
   var $tf = $('#minibuffer input[type=text]');
-  // commands
-  // command functions are bound to current Buffer when called
-  exports.commands = {
-    help: function (rawArgs, subject) {
-      //var text = $('#help-buffer')[0].firstChild.data;
-      //$(this.node).empty()[0].appendChild(document.createTextNode(text));
-      //$(this.node).html($('#help-buffer').html());
-      this.mode = 'txt';
-      this.html = $('#help-buffer').html();
-      return '';
-    },
-    mode: function (rawArgs, setmode) {
-      if (setmode) {
-        this.mode = setmode;
-        this.update();
-      }
-      return this.mode;
-    },
-    eval: function (rawArgs) {
-      try {
-        var r = eval(rawArgs);
-        console.log('eval>', rawArgs, '-->', r);
-        try {
-          r = JSON.stringify(r);
-        } catch (e) {}
-        return String(r);
-      } catch (e) {
-        return String(e);
-      }
-    },
-    
-    // new buffer
-    'new-buffer': function() {
-      // TODO: window <w> should be able to keep around multiple buffers
-      //       and this command should do e.g. w.buffers.unshift(new Buffer)
-      this.content = '';
-      $(this.node).focus();
-      return '';
-    },
-    // clear current buffer
-    'clear-buffer': function () {
-      this.content = '';
-    },
-    
-    // enable/disable prettify
-    'prettify': function (raw, action) {
-      var withoutInSearch =
-        document.location.search.indexOf('without-prettify') !== -1;
-      if (String(action).charAt(0) === 'd') {
-        if (!withoutInSearch) {
-          setTimeout(function(){
-            document.location.search +=
-              ((document.location.search.indexOf('?') === -1) ? '?' : '&')+
-              'without-prettify';
-          },100);
-          return '';
-        } else {
-          return 'prettify already disabled';
-        }
-      } else {
-        if (withoutInSearch) {
-          setTimeout(function(){
-            document.location.search =
-              document.location.search.replace(/without-prettify/g, '');
-          },100);
-          return '';
-        } else {
-          return 'prettify already enabled';
-        }
-      }
-    },
-
-    'load-url': function(raw, url) {
-      var self = this;
-      self.mode = 'txt';
-      self.content = 'Loading '+url+'...';
-      $.get(url, function(data){
-        self.mode = 'html'; // TODO: check content-type header in response
-        self.content = data;
-      });
-    },
-
-    // clears the command line history
-    'clear-history': function () {
-      localStorage.removeItem('commandHistory');
-      return '';
-    }
-
-  };
   var historyIndex = -1;
   $tf.keydown(function(ev) {
     if (ev.keyCode === 13) {
@@ -451,7 +460,7 @@ $(function(){
         } else {
           if (historyIndex < 0) historyIndex = -1;
           var s = hist[historyIndex];
-          console.log(hist, historyIndex, '-->', s);
+          //console.log(hist, historyIndex, '-->', s);
           this.value = s || "";
         }
       }
