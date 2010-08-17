@@ -212,7 +212,7 @@ Window.prototype = {
 
 exports.commands = {
   help: function (rawArgs, subject) {
-    var self = w.buffer;
+    var self = exports.w.buffer;
     //var text = $('#help-buffer')[0].firstChild.data;
     //$(self.node).empty()[0].appendChild(document.createTextNode(text));
     //$(self.node).html($('#help-buffer').html());
@@ -221,7 +221,7 @@ exports.commands = {
     return '';
   },
   mode: function (rawArgs, setmode) {
-    var self = w.buffer;
+    var self = exports.w.buffer;
     if (setmode) {
       self.mode = setmode;
       self.update();
@@ -243,7 +243,7 @@ exports.commands = {
   
   // new buffer
   'new-buffer': function() {
-    var self = w.buffer;
+    var self = exports.w.buffer;
     // TODO: window <w> should be able to keep around multiple buffers
     //       and this command should do e.g. w.buffers.unshift(new Buffer)
     self.content = '';
@@ -252,7 +252,7 @@ exports.commands = {
   },
   // clear current buffer
   'clear-buffer': function () {
-    var self = w.buffer;
+    var self = exports.w.buffer;
     self.content = '';
   },
   
