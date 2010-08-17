@@ -296,7 +296,7 @@ $(function(){
   });
 
   // command line / minibuffer stuff -- area of TODO FIXME WIP and REFACTOR
-  var $tf = $('#minibuffer input[type=text]'),
+  var $tf = $('#minibuffer input[type=text]');
   // commands
   // command functions are bound to current Buffer when called
   var commands = {

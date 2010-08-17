@@ -11,6 +11,16 @@
     <script src="main.js"></script>
   </head>
   <body>
+    <div id="compat-disclaimer">
+      <h2>Euhm</h2>
+      <p>
+        I'm sorry, but this little experiment only functions properly in
+        Safari 4 or Chrome.
+      </p>
+      <p><small>
+        <a href="?no-client-check">Try it anyway</a>
+      </small></p>
+    </div>
     <block id="header">
       <buffer-name>*Example*</buffer-name>
     </block>
@@ -94,12 +104,22 @@ This is a very simple and experimental text editor which runs in >=Safari 4.
   <em>Special key bindings</em>
     TAB              Inserts two spaces to the left of the cursor
     ESC              Escape from command line (restore focus to buffer)
-    &lt;CTRL> c      Jump to command line (press ESC to leave)
+    &lt;CTRL> c         Jump to command line (press ESC to leave)
 
 <b>This is free, experimental software</b>
   You can find the latest source at <a href="http://github.com/rsms/webkit-editor">http://github.com/rsms/webkit-editor</a>
   Released under MIT, Copyright (c) 2010 Rasmus Andersson &lt;<a href="http://hunch.se/">http://hunch.se/</a>>
 
 </x>
+  <script>
+  if (document.location.search.indexOf('no-client-check') === -1) {
+    $(function(){
+      if (navigator.userAgent.indexOf('Safari') === -1) {
+        var e = $('#compat-disclaimer').clone().css('display', 'block');
+        $('body').empty().append(e);
+      }
+    });
+  }
+  </script>
   </body>
 </html>
