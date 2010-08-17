@@ -1,0 +1,105 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Editor</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"
+      ></script>
+    <link rel="stylesheet" href="index.less" type="text/less" media="screen">
+    <script src="less.js"></script>
+    <script src="prettify.js"></script>
+    <script src="main.js"></script>
+  </head>
+  <body>
+    <block id="header">
+      <buffer-name>*Example*</buffer-name>
+    </block>
+    <window id="main">
+      <gutter class="left">
+        <line-numbers>1</line-numbers>
+      </gutter>
+      <pre contenteditable="true" tabindex="0" class="prettyprint lang-js">var sys = require('sys');
+var events = require("events"),
+    Buffer = require('buffer').Buffer;
+
+// execute fn (in the local process), finalized by invocation of callback
+function execute(ctx, fn, callback) {
+  var result;
+  try {
+    result = fn(ctx, callback);
+  } catch (err) {
+    // fn caused some trouble
+    return callback(err);
+  }
+  if (result === callback || result === exports.LATER) {
+    // fn is async and will invoke callback when done
+    return callback;
+  } else if (result === undefined) {
+    // undefined (no) return value means the context is to be returned
+    result = ctx;
+  }
+  callback(null, result);
+}
+
+exports.LATER = 1;
+
+if (!Array.prototype.map) {
+  Array.prototype.map = function(fun /*, thisp*/) {
+    var len = this.length >>> 0;
+    var res = new Array(len);
+    var thisp = arguments[1];
+
+    for (var i = 0; i &lt; len; i++) {
+      if (i in this) {
+        res[i] = fun.call(thisp, this[i], i, this);
+      }
+    }
+    return res;
+  };
+}
+if (!Array.prototype.filter) {
+  Array.prototype.filter = function (block /*, thisp */) {
+    var values = [];
+    var thisp = arguments[1];
+    for (var i = 0; i &lt; this.length; i++) {
+      if (block.call(thisp, this[i])) {
+        values.push(this[i]);
+      }
+    }
+    return values;
+  };
+}
+</pre>
+    </window>
+    <block id="minibuffer">
+      &rarr; <input type="text" value="">
+      <a href="http://github.com/rsms/webkit-editor">webkit-editor</a>
+    </block>
+    <x id="help-buffer" style="display:none">webkit-editor
+<hr>
+This is a very simple and experimental text editor which runs in >=Safari 4.
+
+<b>Commands</b>
+  help               Display this help buffer
+  mode [&lt;mode>]      Read or set-and-read buffer mode (e.g. "js" or "cc")
+  eval &lt;javascript>  Evaluate JavaScript
+  clear-buffer       Clear the buffer
+  new-buffer         New, empty buffer
+
+<b>Editing</b>
+  The editor works almost like other rich text editors in OS X, except that
+  undo/redo will be unavailable when Google Prettify is enabled, since it messes
+  up undo/redo.
+  
+  <em>Special key bindings</em>
+    TAB              Inserts two spaces to the left of the cursor
+    ESC              Escape from command line (restore focus to buffer)
+    &lt;CTRL> c      Jump to command line (press ESC to leave)
+
+<b>This is free, experimental software</b>
+  You can find the latest source at <a href="http://github.com/rsms/webkit-editor">http://github.com/rsms/webkit-editor</a>
+  Released under MIT, Copyright (c) 2010 Rasmus Andersson &lt;<a href="http://hunch.se/">http://hunch.se/</a>>
+
+</x>
+  </body>
+</html>
