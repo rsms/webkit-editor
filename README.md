@@ -2,14 +2,13 @@
 
 This is an experiment in creating a text editor (for computer code) in Safari/WebKit.
 
-- Requires Safari 4 or later
-- Does **NOT** work with other WebKit browers at the moment
+**Requires Safari 4 or Chrome**
 
 > Disclaimer: This is just for fun and not meant to be a useful editor.
 
 ## Usage
 
-Open `index.html` in Safari.
+Open `index.html` or <a href="http://hunch.se/webkit-editor/">try it out online</a>.
 
 ### Disabling Prettify (syntax highlighting)
 

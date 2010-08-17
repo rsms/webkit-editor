@@ -1,3 +1,4 @@
+(function(exports){
 // -------------------------------------------------------------------------
 // utils
 
@@ -169,14 +170,21 @@ Buffer.prototype = {
   }
 };
 
-prop(Buffer.prototype, "content", function(){
+prop(Buffer.prototype, 'content', function(){
+  return this.node.innerHTML;
+}, function(str){
+  $(this.node).empty().append(document.createTextNode(str));
+  this.window.gutter.update();
+});
+
+prop(Buffer.prototype, 'html', function(){
   return this.node.innerHTML;
 }, function(str){
   this.node.innerHTML = str;
   this.window.gutter.update();
 });
 
-prop(Buffer.prototype, "mode", function(){
+prop(Buffer.prototype, 'mode', function(){
   var s = this.node.getAttribute('class');
   var m = /(?:^|\s)lang-([\w\d]+)/.exec(s);
   return m[1];
@@ -299,13 +307,13 @@ $(function(){
   var $tf = $('#minibuffer input[type=text]');
   // commands
   // command functions are bound to current Buffer when called
-  var commands = {
+  exports.commands = {
     help: function (rawArgs, subject) {
       //var text = $('#help-buffer')[0].firstChild.data;
       //$(this.node).empty()[0].appendChild(document.createTextNode(text));
       //$(this.node).html($('#help-buffer').html());
-      this.content = $('#help-buffer').html();
       this.mode = 'txt';
+      this.html = $('#help-buffer').html();
       return '';
     },
     mode: function (rawArgs, setmode) {
@@ -327,28 +335,78 @@ $(function(){
         return String(e);
       }
     },
+    
+    // new buffer
     'new-buffer': function() {
+      // TODO: window <w> should be able to keep around multiple buffers
+      //       and this command should do e.g. w.buffers.unshift(new Buffer)
       this.content = '';
       $(this.node).focus();
       return '';
     },
-    'clear-buffer': function() {
+    // clear current buffer
+    'clear-buffer': function () {
       this.content = '';
+    },
+    
+    // enable/disable prettify
+    'prettify': function (raw, action) {
+      var withoutInSearch =
+        document.location.search.indexOf('without-prettify') !== -1;
+      if (String(action).charAt(0) === 'd') {
+        if (!withoutInSearch) {
+          setTimeout(function(){
+            document.location.search +=
+              ((document.location.search.indexOf('?') === -1) ? '?' : '&')+
+              'without-prettify';
+          },100);
+          return '';
+        } else {
+          return 'prettify already disabled';
+        }
+      } else {
+        if (withoutInSearch) {
+          setTimeout(function(){
+            document.location.search =
+              document.location.search.replace(/without-prettify/g, '');
+          },100);
+          return '';
+        } else {
+          return 'prettify already enabled';
+        }
+      }
+    },
+
+    'load-url': function(raw, url) {
+      var self = this;
+      self.mode = 'txt';
+      self.content = 'Loading '+url+'...';
+      $.get(url, function(data){
+        self.mode = 'html'; // TODO: check content-type header in response
+        self.content = data;
+      });
+    },
+
+    // clears the command line history
+    'clear-history': function () {
+      localStorage.removeItem('commandHistory');
+      return '';
     }
+
   };
-  var historyIndex = 0;
+  var historyIndex = -1;
   $tf.keydown(function(ev) {
     if (ev.keyCode === 13) {
       var m, origInput = $.trim(this.value);
       if ((m = /([^\s]+)\s*(.*)/.exec(origInput))) {
-        var cmd = commands[m[1]];
+        var cmd = exports.commands[m[1]];
         if (cmd) {
           var rawArgs = m[2];
           var args = rawArgs.split(/\s+/);
           args.unshift(rawArgs);
-          var output = cmd.apply(w.buffer, args);
+          
           // add to commandHistory
-          var hist = sessionStorage.commandHistory;
+          var hist = localStorage.commandHistory;
           if (hist) {
             try { hist = JSON.parse(hist); } catch (e) { hist = []; }
           } else {
@@ -361,8 +419,12 @@ $(function(){
             if (hist.length > 100) {
               hist.splice(99, hist.length-99);
             }
-            sessionStorage.commandHistory = JSON.stringify(hist);
+            localStorage.commandHistory = JSON.stringify(hist);
           }
+
+          // run command
+          var output = cmd.apply(w.buffer, args);
+
           if (typeof output === 'string') {
             this.value = output;
           }
@@ -374,7 +436,7 @@ $(function(){
       }
       this.select();
     } else if (ev.keyCode === 38 || ev.keyCode === 40) {
-      var hist = sessionStorage.commandHistory;
+      var hist = localStorage.commandHistory;
       hist = (hist) ? JSON.parse(hist) : null;
       if (hist && hist.length) {
         if (ev.keyCode === 38) {
@@ -446,3 +508,5 @@ $(function(){
   }*/
   
 });
+
+})(window.editor={}); // {exports} namespace

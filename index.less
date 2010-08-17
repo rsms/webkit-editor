@@ -8,6 +8,21 @@ img { border:none; }
 a { text-decoration:none; }
 h1 > a, h2 > a, h3 > a, h4 > a, h5 > a, h6 > a { color:inherit; }
 // -----------------------------------------------------------------------------
+@font-face {
+	font-family: 'M+ 1m';
+  font-style: normal;
+  font-weight: normal;
+	src: local('mplus-1m-light'), local('M+ 1m light'),
+    url('http://hunch.se/style/fonts/mplus-1m-light.ttf') format('truetype');
+}
+@font-face {
+	font-family: 'M+ 1m';
+  font-style: normal;
+  font-weight: bold;
+	src: local('mplus-1m-medium'), local('M+ 1m medium'),
+	  url('http://hunch.se/style/fonts/mplus-1m-medium.ttf') format('truetype');
+}
+// -----------------------------------------------------------------------------
 // templates/mixins
 .rect (@left: auto, @top: auto, @right: auto, @bottom: auto) {
   display:block; position:absolute;
@@ -35,6 +50,8 @@ block { display:block; position:absolute; }
 .debugbg (@r:255, @g:0, @b:0) {
   //background-color:rgba(@r, @g, @b, 0.1)
 }
+
+.selection-background { background-color: rgba(100,140,200,0.4); }
 
 window {
   .rect(0, 20px, 0, 20px);
@@ -68,8 +85,7 @@ window {
     outline:none;
     padding-bottom:2em;
     margin-bottom:-1em;
-    .selection-background { background-color: rgba(100,140,200,0.4); }
-    ::selection { .selection-background; }
+    ::selection { .selection-background; text-shadow:none; }
     //.debugbg();
     //word-wrap: break-word; // could be char
     /*
@@ -79,6 +95,11 @@ window {
     */
     // links
     a { text-decoration:underline; color:inherit; }
+    // "invisible" marks
+    imark {
+      color:rgba(255,255,255, 0.2);
+      text-shadow: none;
+    }
     // prettify style
     .pln { } /* plain */
     .str { color:#86ad6c; background-color:#1e2620; } /* strings */
@@ -92,6 +113,14 @@ window {
     .atn { color: #606; }
     .atv { color: #080; }
     .dec { color: #606; }
+  }
+  pre.lang-txt {
+    b,em { color:#fff; }
+    samp {
+      font-family:'M+ 1m', monospace;
+      background-color:#202933;
+      color:#ace;
+    }
   }
   pre.toplayer {
     background-color:transparent;
@@ -121,7 +150,7 @@ window {
     line-height:20px;
   }
   input[type=text]:focus {
-    color:#aaa;
+    color:#ddd;
     outline:none;
   }
   input[type=text].highlight {

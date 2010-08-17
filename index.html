@@ -7,7 +7,11 @@
       ></script>
     <link rel="stylesheet" href="index.less" type="text/less" media="screen">
     <script src="less.js"></script>
-    <script src="prettify.js"></script>
+    <script>
+    if (document.location.search.indexOf('without-prettify') === -1) {
+      document.write('<'+'script src="prettify.js">'+'<'+'/script>');
+    }
+    </script>
     <script src="main.js"></script>
   </head>
   <body>
@@ -89,22 +93,39 @@ if (!Array.prototype.filter) {
 <hr>
 This is a very simple and experimental text editor which runs in >=Safari 4.
 
-<b>Commands</b>
-  help               Display this help buffer
-  mode [&lt;mode>]      Read or set-and-read buffer mode (e.g. "js" or "cc")
-  eval &lt;javascript>  Evaluate JavaScript
-  clear-buffer       Clear the buffer
-  new-buffer         New, empty buffer
-
 <b>Editing</b>
   The editor works almost like other rich text editors in OS X, except that
   undo/redo will be unavailable when Google Prettify is enabled, since it messes
   up undo/redo.
   
   <em>Special key bindings</em>
-    TAB              Inserts two spaces to the left of the cursor
-    ESC              Escape from command line (restore focus to buffer)
-    &lt;CTRL> c         Jump to command line (press ESC to leave)
+    <samp>TAB</samp>                Inserts two spaces to the left of the cursor
+    <samp>ESC</samp>                Escape from command line (restore focus to buffer)
+    <samp>CTRL c</samp>             Jump to command line (press <samp>ESC</samp> to leave)
+
+<b>Command line</b>
+  At the bottom of the editor is an interactive command line which can be used
+  to issue commands and modify the editor.
+
+  The command line keeps a history which can be navigated in by pressing the up
+  and down arrow keys. You can clear the history using the <samp>clear-history</samp>
+  command.
+
+  <em>Commands</em>
+    <samp>help</samp>               Display this help buffer
+    <samp>mode [{mode}]</samp>      Read or set-and-read buffer mode (e.g. "js" or "cc")
+    <samp>eval {javascript}</samp>  Evaluate JavaScript
+    <samp>clear-buffer</samp>       Clear the buffer
+    <samp>new-buffer</samp>         New, empty buffer
+    <samp>prettify disable|enable</samp><imark>↩</imark>
+                       Disable or enable Google Prettify (syntax highlighting)
+    <samp>load-url {url}</samp>     Load {url} into a new buffer
+    <samp>clear-history</samp>      Clear command line history
+
+<b>JavaScript API</b>
+  -- TODO: work in progress --
+  
+  <samp>editor.commands</samp> -> {name: function}
 
 <b>This is free, experimental software</b>
   You can find the latest source at <a href="http://github.com/rsms/webkit-editor">http://github.com/rsms/webkit-editor</a>
